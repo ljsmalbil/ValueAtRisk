@@ -1,17 +1,16 @@
 import seaborn as sns
-import pandas as pd
 import numpy as np
 import yfinance as yf
 
 import matplotlib.pyplot as plt
 
-from scipy.stats import norm
 from scipy.stats import t
 
 class ValueAtRisk:
-    def __init__(self, default = '^GSPC', period = "1y"):
+    def __init__(self, default = '^GSPC', period = "1y", percentile = 0.01):
         self.default = default
         self.period = period
+        self.percentile = percentile
 
     def return_distribution_num(self):
         # Get S&P500 Index data
@@ -47,7 +46,7 @@ class ValueAtRisk:
 
         return plt.show()
 
-    def value_at_risk_hist(self, percentile = 0.05):
+    def value_at_risk_hist(self):
         """
         N.B. This VaR computation uses the historical method
 
@@ -58,9 +57,9 @@ class ValueAtRisk:
         current_portfolio = ValueAtRisk(default=self.default, period=self.period)
         index_data = current_portfolio.return_distribution_num()
 
-        return np.quantile(index_data, percentile)
+        return np.quantile(index_data, self.percentile)
 
-    def value_at_risk_var_covar(self, percentile = 0.05):
+    def value_at_risk_var_covar(self):
         """
         This VaR computation uses the variance-covariance method
 
@@ -73,12 +72,12 @@ class ValueAtRisk:
         current_portfolio = ValueAtRisk(default=self.default, period=self.period)
         index_data = current_portfolio.return_distribution_num()
 
-        alpha = t.ppf(1 - percentile, df = len(index_data))
+        alpha = t.ppf(1 - self.percentile, df = len(index_data))
         var_vc = alpha * np.std(index_data)
 
         return var_vc
 
-    def value_at_risk_monte_carlo(self, repetitions = 1000, percentile = 0.05):
+    def value_at_risk_monte_carlo(self, repetitions = 1000):
         """
         This VaR computation uses the Monte Carlo method
 
@@ -94,7 +93,7 @@ class ValueAtRisk:
         mu, sigma = np.mean(index_data), np.std(index_data)  # mean and standard deviation
         monte_carlo = np.random.normal(mu, sigma, repetitions)
 
-        alpha = t.ppf(1 - percentile, df=len(monte_carlo))
+        alpha = t.ppf(1 - self.percentile, df=len(monte_carlo))
         var_mc = alpha * np.std(monte_carlo)
 
         return var_mc
