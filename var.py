@@ -1,7 +1,6 @@
 import seaborn as sns
 import numpy as np
 import yfinance as yf
-
 import matplotlib.pyplot as plt
 
 from scipy.stats import t
